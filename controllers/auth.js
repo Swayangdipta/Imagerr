@@ -1,12 +1,40 @@
 const formidable = require("formidable")
 const User = require("../models/user")
 const fs = require('fs')
+const jwt = require("jsonwebtoken")
 
 exports.getUserById = (req,res,next,id) => {
 
 }
 
-exports.signIn = (req,res) => {}
+exports.signIn = (req,res) => {
+    const {email,password} = req.body
+    if(!email || !password) return res.status(400).json({error: "All fields are required.",body: ''})
+
+    User.findOne({email}).exec((err,user)=>{
+        if(err || !user){
+            return res.status(404).json({error: "Email not registered.Signup first.",body: err})
+        }
+
+        if(!user.authenticate(password)){
+            return res.status(400).json({error: "Email or Password did not matched.",body: "Authorization Error"})
+        }
+
+        const token = jwt.sign({_id: user._id},process.env.SECRET)
+        res.cookie("token",token,{expire: new Date(Date.now()+2.592e+9)})
+        const {_id,name,email,role,accountType} = user
+        return res.json({
+            token,
+            user:{
+                _id,
+                name,
+                email,
+                role,
+                accountType
+            }
+        })
+    })
+}
 
 exports.signUp = (req,res) => {
     const form = new formidable.IncomingForm()

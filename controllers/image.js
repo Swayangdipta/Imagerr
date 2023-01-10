@@ -5,7 +5,10 @@ const { uploadImage, destroyImage } = require('../services/imageUpload')
 const { pushIntoUserUploads, removeImageFromUserUploads } = require('./user')
 
 exports.getImageById = (req,res,next,id) => {
-    Image.findById(id).exec((err,img)=>{
+    Image.findById(id)
+    .populate("author","-encrypted_password -salt -collections")
+    .populate("category")
+    .exec((err,img)=>{
         if(err){
             return res.status(400).json({error: "Faild to get image information!",message: err})
         }
@@ -60,7 +63,10 @@ exports.addImage = (req,res) => {
 
 exports.removeImage = (req,res) => {
     destroyImage(req.image.images.id,req.image.images.resource_type).then((response)=>{ 
-        removeImageFromUserUploads(req,res).then(doc=>{
+        removeImageFromUserUploads(req,req.image._id).then(doc=>{
+            if(doc.error){
+                return res.status(500).json({error: "Faild to remove asset from your collection!",message: doc.error})
+            }
             Image.findByIdAndDelete(req.image._id,(err,deletedImage)=>{
                 if(err){
                     return res.status(500).json({error: "Faild to remove asset from Database!",message: err})
@@ -68,7 +74,7 @@ exports.removeImage = (req,res) => {
                 return res.status(200).json({success: true,message: "Asset removed successfully!"})  
             })  
         }).catch(err=>{
-            return res.status(500).json({error: "Faild to remove asset from your collection!",message:err})
+            return res.status(500).json({error: "Faild to remove asset from collection!",message:err})
         })   
     }).catch(error => {
         return res.status(400).json({error: "Faild to delete asset from server!",message: error})

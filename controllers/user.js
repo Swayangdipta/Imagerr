@@ -1,7 +1,11 @@
+const mongoose = require("mongoose")
 const User = require("../models/user")
 
 exports.getUserById = (req,res,next,id) => {
-    User.findById(id).exec((err,user)=>{
+    User.findById(id)
+    .populate('uploads')
+    .populate("collections")
+    .exec((err,user)=>{
         if(err){
             res.status(404).json({error: "Faild to get user.",body:""})
         }
@@ -22,19 +26,19 @@ exports.pushIntoUserUploads = (req,res,data,image) => {
     })
 }
 
-exports.removeImageFromUserUploads = async (req,res) => {
-    // Error in here...function returing true but not working
+exports.removeImageFromUserUploads = async (req,id) => {
+    // Resolved Error By using $pull instead of $pop
+    // and using .then().catch()
+
     try {
-        return User.findByIdAndUpdate(req.profile._id
-            ,{$pop: {"uploads": req.body._id}},
-            {safe: true,upsert: true,new:true}
-        ).then(doc => {
+        return User.findByIdAndUpdate(req.profile._id,{$pull: {"uploads": id}},
+        {safe: true,upsert: true,new: true})
+        .then(doc=>{
             return doc
-        }).catch(err=>{
-            console.log(err);
-            return err
+        }).catch(error=>{
+            return {error: error}
         })
     } catch (error) {
-        return error
+        return {error: error}
     }
 }

@@ -1,6 +1,5 @@
 const Image = require('../models/image')
 const formidable = require('formidable')
-const fs = require('fs')
 const { uploadImage, destroyImage } = require('../services/imageUpload')
 const { pushIntoUserUploads, removeImageFromUserUploads } = require('./user')
 
@@ -78,5 +77,15 @@ exports.removeImage = (req,res) => {
         })   
     }).catch(error => {
         return res.status(400).json({error: "Faild to delete asset from server!",message: error})
+    })
+}
+
+exports.getAllImages = (req,res) => {
+    Image.find().exec((err,images)=>{
+        if(err){
+            return res.status(404).json({error: "No images found",message: err})
+        }
+
+        return res.status(200).json(images)
     })
 }

@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     }],
     accountType: {
         type: String,
-        default: "Free"
+        default: "User"
     },
     profilePicture: {
         Data: Buffer,

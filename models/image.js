@@ -5,7 +5,24 @@ const {ObjectId }= mongoose.Schema.Types
 const imageSchema = new mongoose.Schema({
     author: {
         type: ObjectId,
-        ref: 'User'
+        ref: 'User',
+        required: true
+    },
+    category: {
+        type: ObjectId,
+        ref: 'Category'
+    },
+    images: Object,
+    tags: [String],
+    price: {
+        type: Number,
+        default: 0,
+        required: true
+    },
+    isFree: {
+        type: Boolean,
+        default: false,
+        required: true
     }
 },{timestamps: true})
 

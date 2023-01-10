@@ -2,10 +2,7 @@ const formidable = require("formidable")
 const User = require("../models/user")
 const fs = require('fs')
 const jwt = require("jsonwebtoken")
-
-exports.getUserById = (req,res,next,id) => {
-
-}
+const {expressjwt} = require('express-jwt')
 
 exports.signIn = (req,res) => {
     const {email,password} = req.body
@@ -79,4 +76,35 @@ exports.signout = (req,res) => {
     return res.json({
         message: "User signed out"
     })
+}
+
+exports.isSignedIn = expressjwt({
+    secret: process.env.SECRET,
+    algorithms: ['SHA256','HS256','RS256','RSA',"sha1"],
+    userProperty: "auth"
+})
+
+exports.isAuthenticated = (req,res,next) => {
+    let checker = req.profile && req.auth && req.auth._id == req.profile._id;
+    if(!checker){
+        return res.status(403).json({error: "Not Authorized. Access Denied.",body: "You are not authorized to access/modify this content."})
+    }
+
+    next()
+}
+
+exports.isAdmin = (req,res,next) => {
+    if(req.profile.role !== 5){
+        res.status(403).json({error: "You are not an Admin.",body:""})
+    }
+
+    next()
+}
+
+exports.isContributor = (req,res,next) => {
+    if(req.profile.role !== 2){
+        res.status(403).json({error: "You are not an Contributor.",body:""})
+    }
+
+    next()
 }

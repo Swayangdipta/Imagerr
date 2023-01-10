@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const { getUserById, signUp } = require('../controllers/user')
+const { getUserById } = require('../controllers/user')
 
 router.param("userId",getUserById)
 

@@ -19,7 +19,7 @@ exports.signIn = (req,res) => {
 
         const token = jwt.sign({_id: user._id},process.env.SECRET)
         res.cookie("token",token,{expire: new Date(Date.now()+2.592e+9)})
-        const {_id,name,email,role,accountType} = user
+        const {_id,name,email,role,accountType,uploads,collections} = user
         return res.json({
             token,
             user:{
@@ -27,7 +27,9 @@ exports.signIn = (req,res) => {
                 name,
                 email,
                 role,
-                accountType
+                accountType,
+                uploads,
+                collections
             }
         })
     })
@@ -87,7 +89,7 @@ exports.isSignedIn = expressjwt({
 exports.isAuthenticated = (req,res,next) => {
     let checker = req.profile && req.auth && req.auth._id == req.profile._id;
     if(!checker){
-        return res.status(403).json({error: "Not Authorized. Access Denied.",body: "You are not authorized to access/modify this content."})
+        return res.status(403).json({error: "Not Authorized. Access Denied.",body: "You are not authorized to access/modify this"})
     }
 
     next()

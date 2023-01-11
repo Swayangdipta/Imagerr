@@ -1,11 +1,12 @@
 const Image = require('../models/image')
 const formidable = require('formidable')
+const _ = require("lodash")
 const { uploadImage, destroyImage } = require('../services/imageUpload')
 const { pushIntoUserUploads, removeImageFromUserUploads } = require('./user')
 
 exports.getImageById = (req,res,next,id) => {
     Image.findById(id)
-    .populate("author","-encrypted_password -salt -collections")
+    .populate("author","-encrypted_password -salt -collections -bank")
     .populate("category")
     .exec((err,img)=>{
         if(err){
@@ -52,7 +53,7 @@ exports.addImage = (req,res) => {
                 }
     
                 // next() or Add directly to user here
-                pushIntoUserUploads(req,res,response.url,createdImage)
+                pushIntoUserUploads(req,res,createdImage)
             })
         }).catch(error=>{
             return res.status(400).json({error: "Faild to upload image!",message: error})
@@ -77,6 +78,19 @@ exports.removeImage = (req,res) => {
         })   
     }).catch(error => {
         return res.status(400).json({error: "Faild to delete asset from server!",message: error})
+    })
+}
+
+exports.updateImage = (req,res) => {
+    let image = req.image
+    image = _.extend(image,req.body)
+
+    image.save((err,updatedImage)=>{
+        if(err){
+            return res.status(400).json({error: "Faild to update image!",message: err})
+        }
+
+        return res.status(200).json(updatedImage)
     })
 }
 

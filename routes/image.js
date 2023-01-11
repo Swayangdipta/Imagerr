@@ -1,12 +1,14 @@
 const router = require('express').Router()
-const { addImage, getImageById, removeImage, getAllImages } = require('../controllers/image')
-const { getUserById } = require('../controllers/user')
+const { addImage, getImageById, removeImage, getAllImages, updateImage } = require('../controllers/image')
+const { getUserById,isAuthorizedAsset } = require('../controllers/user')
+const { isSignedIn,isAuthenticated,isContributor } = require('../controllers/auth')
 
 router.param("userId",getUserById)
 router.param("imageId",getImageById)
 
 router.get("/images",getAllImages)
-router.post("/upload/:userId",addImage)
-router.post("/remove/:userId/:imageId",removeImage)
+router.post("/image/:userId",isSignedIn,isAuthenticated,isContributor,addImage)
+router.delete("/image/:userId/:imageId",isSignedIn,isAuthenticated,isContributor,removeImage)
+router.put("/image/:userId/:imageId",isSignedIn,isAuthenticated,isContributor,updateImage)
 
 module.exports = router

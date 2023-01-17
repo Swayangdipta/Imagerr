@@ -8,7 +8,7 @@ exports.signIn = (req,res) => {
     const {email,password} = req.body
     if(!email || !password) return res.status(400).json({error: "All fields are required.",body: ''})
 
-    User.findOne({email}).exec((err,user)=>{
+    User.findOne({email: {$eq: email}}).exec((err,user)=>{
         if(err || !user){
             return res.status(404).json({error: "Email not registered.Signup first.",body: err})
         }

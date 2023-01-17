@@ -3,6 +3,7 @@ const User = require("../models/user")
 const fs = require('fs')
 const jwt = require("jsonwebtoken")
 const {expressjwt} = require('express-jwt')
+const crypto = require('crypto')
 
 exports.signIn = (req,res) => {
     const {email,password} = req.body
@@ -72,11 +73,68 @@ exports.signUp = (req,res) => {
     })
 }
 
-
 exports.signout = (req,res) => {
     res.clearCookie("token")
     return res.json({
         message: "User signed out"
+    })
+}
+
+exports.forgotPassword = (req,res) => {
+    const {email} = req.body
+
+    if(!email || email === "" || email === null){
+        return res.status(400).json({error: "No email provided!",body: "Bad Submission."})
+    }
+
+    User.findOne({email: {$eq: email}}).exec(async(err,user) => {
+        if(err || !user){
+            return res.status(404).json({error: "No user found!",body: err})
+        }
+
+        let resetToken = await user.generateForgetPasswordToken()
+        user.save({validateBeforeSave: false}).then(doc=>{
+            let resetUrl = `${req.protocol}://${req.get("host")}/api/auth/password/reset/${resetToken}`
+            console.log(resetUrl);
+            return res.status(200).json({success: true,message: "Reset Link Sent!"})
+        }).catch(err=>{
+            return res.status(400).json({error: "Faild to perform forget password!",body: err})
+        })
+    })
+}
+
+exports.resetPassword = (req,res) => {
+    const {token: resetToken} = req.params
+    const {password,confirmPassword} = req.body
+
+    if(password !== confirmPassword) {
+        return res.status(400).json({error: "Passwords did not matched!",body: "Not matched."})
+    }
+
+    const resetPasswordToken = 
+        crypto.createHash("sha256")
+            .update(resetToken)
+            .digest('hex')
+
+    User.findOne({
+        forgetPasswordToken: resetPasswordToken,
+        forgetPasswordExpiry: {$gt: Date.now()}
+    }).exec((err,user)=>{
+        if(err){
+            return res.status(404).json({error: "Not found or time expired for reset!",body: err})
+        }
+
+        user.password = password
+        user.forgetPasswordExpiry = undefined
+        user.forgetPasswordToken = undefined
+
+        user.save((errr,updatedUser)=>{
+            if(errr){
+                return res.status(500).json({error: "Faild to reset password!",body: errr})
+            }
+
+            res.status(200).json({success: true,message: "Password Changed!"})
+        })
     })
 }
 

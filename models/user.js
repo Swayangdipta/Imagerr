@@ -41,7 +41,9 @@ const userSchema = new mongoose.Schema({
     },
     bank: {
         type: Object
-    }
+    },
+    forgetPasswordToken: String,
+    forgetPasswordExpiry: Date
 },{timestamps: true})
 
 userSchema.virtual('password')
@@ -68,6 +70,18 @@ userSchema.methods = {
         }catch(e){
             return ''
         }
+    },
+    generateForgetPasswordToken: function(){
+        const token = crypto.randomBytes(20).toString('hex')
+
+        // Save to db
+        this.forgetPasswordToken = 
+            crypto.createHash('sha256')
+            .update(token)
+            .digest('hex')
+
+        this.forgetPasswordExpiry = Date.now() + 15 * 60 * 1000
+        return token
     }
 }
 

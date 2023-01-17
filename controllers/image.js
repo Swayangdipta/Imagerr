@@ -3,6 +3,7 @@ const formidable = require('formidable')
 const _ = require("lodash")
 const { uploadImage, destroyImage } = require('../services/imageUpload')
 const { pushIntoUserUploads, removeImageFromUserUploads } = require('./user')
+const { pushIntoCategory, popFromCategory } = require('./category')
 
 exports.getImageById = (req,res,next,id) => {
     Image.findById(id)
@@ -53,7 +54,7 @@ exports.addImage = (req,res) => {
                 }
     
                 // next() or Add directly to user here
-                pushIntoUserUploads(req,res,createdImage)
+                pushIntoCategory(req,res,createdImage)
             })
         }).catch(error=>{
             return res.status(400).json({error: "Faild to upload image!",message: error})
@@ -67,12 +68,18 @@ exports.removeImage = (req,res) => {
             if(doc.error){
                 return res.status(500).json({error: "Faild to remove asset from your collection!",message: doc.error})
             }
-            Image.findByIdAndDelete(req.image._id,(err,deletedImage)=>{
-                if(err){
-                    return res.status(500).json({error: "Faild to remove asset from Database!",message: err})
-                }
-                return res.status(200).json({success: true,message: "Asset removed successfully!"})  
-            })  
+
+            popFromCategory(req,res).then(doc=>{
+                Image.findByIdAndDelete(req.image._id,(err,deletedImage)=>{
+                    if(err){
+                        return res.status(500).json({error: "Faild to remove asset from Database!",message: err})
+                    }
+                    return res.status(200).json({success: true,message: "Asset Removed successfully"})
+                }) 
+            }).catch(err => {
+                return res.status(400).json({error: "Faild to remove asset from category!",message: err})
+            })
+ 
         }).catch(err=>{
             return res.status(500).json({error: "Faild to remove asset from collection!",message:err})
         })   

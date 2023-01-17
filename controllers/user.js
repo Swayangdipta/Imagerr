@@ -54,6 +54,18 @@ exports.getUser = (req,res) => {
     return res.status(200).json(req.profile)
 }
 
+exports.deleteUserAccount = (req,res,next) => {
+    let user = req.profile
+
+    user.remove((err,user)=>{
+        if(err){
+            return res.status(400).json({error: "Faild to delete your account!", mesage: err})
+        }
+
+        next()
+    })
+}
+
 // exports.getUserBankDetails = (req,res) => {
 //     return res.status(200).json({bank: req.profile.bank})
 // }

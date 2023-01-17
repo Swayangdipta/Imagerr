@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const cors = require('cors')
 const {config} = require('./config/index')
+const rateLimit = require('express-rate-limit')
 
 // Route imports are here
 const userRoutes = require('./routes/user')
@@ -26,7 +27,15 @@ mongoose.connect(config.DB_URI,{useNewUrlParser: true,
     console.log("DB CONNECTION FAILD!")
 })
 
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000,
+	max: 100,
+	standardHeaders: true,
+	legacyHeaders: false
+})
+
 // Middlewares
+app.use(limiter)
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());

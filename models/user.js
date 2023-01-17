@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema({
         type: ObjectId,
         ref: 'Image'
     }],
+    purchases: [{
+        type: ObjectId,
+        ref: 'Image'
+    }],
     accountType: {
         type: String,
         default: "User"

@@ -11,7 +11,21 @@ cloudinary.config({
 
 exports.uploadImage = (image) => {
     return cloudinary.uploader.upload(image).then(img=>{
-        return img
+        return cloudinary.uploader.upload(image,{
+            folder: "collections",
+            transformation: [
+                {overlay: "svgviewer-output_dei2pj"},
+                {width: 1000,crop: 'scale'},
+                {flags: "layer_apply"}
+            ]
+        }).then(thumb=>{
+            return {
+                img,
+                thumb
+            }
+        }).catch(err=>{
+            return err
+        })
     }).catch(err=>{
         return err
     })

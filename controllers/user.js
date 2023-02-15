@@ -54,6 +54,11 @@ exports.getUser = (req,res) => {
     return res.status(200).json(req.profile)
 }
 
+exports.getUserPhoto = (req,res) => {
+    res.set('Content-Type',req.profile.profilePicture.contentType)
+    return res.send(req.profile.profilePicture.data)
+}
+
 exports.deleteUserAccount = (req,res,next) => {
     let user = req.profile
 
@@ -106,4 +111,29 @@ exports.isAuthorizedAsset = (req,res,next) => {
     }
 
     next()
+}
+
+exports.pushIntoUserCollections = (req,res) => {
+    User.findByIdAndUpdate(req.profile._id,{$push: {"collections": req.body._id}},
+    {safe: true,upsert: true,new: true},
+    (err,updatedUser)=>{
+        if(err){
+            return res.status(500).json({error: "Faild to add asset to your collection!",message: err})
+        }
+        return res.status(200).json({success: true,message: "Asset added to your collection."})
+    })
+}
+
+exports.removeImageFromUserCollections = (req,res) => {
+    // Resolved Error By using $pull instead of $pop
+    // and using .then().catch()
+
+    User.findByIdAndUpdate(req.profile._id,{$pull: {"collections": req.body._id}},
+        {safe: true,upsert: true,new: true}).exec((err,user)=>{
+            if(err){
+                return res.status(500).json({error: "Faild to remove image from your collection!",message: err})
+            }
+
+            return res.status(200).json({success: true,message: "Asset removed from collection"})
+        })
 }

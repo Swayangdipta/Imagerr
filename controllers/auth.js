@@ -53,8 +53,8 @@ exports.signUp = (req,res) => {
                 return res.status(400).json({error: "Profile picture size limit reached, max 3MB."})
             }
             // Adding Profile Picture to User Acoount
-            user.profilePicture.data = fs.readFileSync(file.profilePicture.path)
-            user.profilePicture.contentType = file.profilePicture.type
+            user.profilePicture.data = fs.readFileSync(file.profilePicture.filepath)
+            user.profilePicture.contentType = file.profilePicture.mimetype
         }
 
         user.save((err,registeredUser)=>{
@@ -94,7 +94,7 @@ exports.forgotPassword = (req,res) => {
 
         let resetToken = await user.generateForgetPasswordToken()
         user.save({validateBeforeSave: false}).then(doc=>{
-            let resetUrl = `${req.protocol}://${req.get("host")}/api/auth/password/reset/${resetToken}`
+            let resetUrl = `${req.headers.origin}/password/reset/${resetToken}`
             console.log(resetUrl);
             return res.status(200).json({success: true,message: "Reset Link Sent!"})
         }).catch(err=>{
@@ -120,7 +120,7 @@ exports.resetPassword = (req,res) => {
         forgetPasswordToken: resetPasswordToken,
         forgetPasswordExpiry: {$gt: Date.now()}
     }).exec((err,user)=>{
-        if(err){
+        if(err || !user){
             return res.status(404).json({error: "Not found or time expired for reset!",body: err})
         }
 

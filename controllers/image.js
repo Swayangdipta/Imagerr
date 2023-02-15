@@ -7,7 +7,7 @@ const { pushIntoCategory, popFromCategory } = require('./category')
 
 exports.getImageById = (req,res,next,id) => {
     Image.findById(id)
-    .populate("author","-encrypted_password -salt -collections -bank")
+    .populate("author","name email _id")
     .populate("category")
     .exec((err,img)=>{
         if(err){
@@ -16,6 +16,12 @@ exports.getImageById = (req,res,next,id) => {
         req.image = img
         next()
     })
+}
+
+exports.getAImage = (req,res) => {
+    if(req.image){
+        return res.json(req.image)
+    }
 }
 
 exports.addImage = (req,res) => {
@@ -36,13 +42,17 @@ exports.addImage = (req,res) => {
 
             let newImage = new Image(fields)
             let imageToStore = {
-                id: response.public_id,
-                version: response.version,
-                format: response.format,
-                resource_type: response.resource_type,
-                width: response.width,
-                height: response.height,
-                size: (response.bytes / 1024)
+                id: response.img.public_id,
+                thumbId: response.thumb.public_id,
+                version: response.img.version,
+                thumbVersion: response.thumb.version,
+                format: response.img.format,
+                thumbFormat: response.thumb.format,
+                resource_type: response.img.resource_type,
+                width: response.img.width,
+                height: response.img.height,
+                ratio: response.img.width / response.img.height,
+                size: (response.img.bytes / 1024)
             }
 
             newImage.images = imageToStore
@@ -102,7 +112,10 @@ exports.updateImage = (req,res) => {
 }
 
 exports.getAllImages = (req,res) => {
-    Image.find().exec((err,images)=>{
+    Image.find()
+    .limit(req.query.limit ? req.query.limit : 50)
+    .populate("author","_id name email")
+    .exec((err,images)=>{
         if(err){
             return res.status(404).json({error: "No images found",message: err})
         }

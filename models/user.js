@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
         default: "User"
     },
     profilePicture: {
-        Data: Buffer,
+        data: Buffer,
         contentType: String
     },
     role: {

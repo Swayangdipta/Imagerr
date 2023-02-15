@@ -3,6 +3,12 @@ const {ObjectId }= mongoose.Schema.Types
 
 
 const imageSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 100
+    },
     author: {
         type: ObjectId,
         ref: 'User',

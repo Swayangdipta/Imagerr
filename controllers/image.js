@@ -125,7 +125,7 @@ exports.getAllImages = (req,res) => {
 }
 
 exports.searchImage = (req, res) => {
-    if (req.body.query === '' || req.body.type === '') {
+    if (req.body.query === '') {
       return res.status(400).json({ error: 'All fields are required!', message: '' });
     }
   

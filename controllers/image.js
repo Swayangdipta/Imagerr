@@ -123,3 +123,27 @@ exports.getAllImages = (req,res) => {
         return res.status(200).json(images)
     })
 }
+
+exports.searchImage = (req, res) => {
+    if (req.body.query === '' || req.body.type === '') {
+      return res.status(400).json({ error: 'All fields are required!', message: '' });
+    }
+  
+    const query = req.body.query;
+    Image.find(
+      {
+        $or: [
+          { title: { $regex: new RegExp(query, 'i') } }, // search for title that contains the query text
+          { tags: { $regex: new RegExp(query, 'i') } }, // search for category that contains the query text
+        ],
+      }
+    ).select('-author -createdAt -updatedAt -category -tags')
+      .then((images) => {
+        console.log(images);
+        res.status(200).json({ message: 'Images retrieved successfully', data: images });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ error: 'Internal server error', message: '' });
+      });
+  };

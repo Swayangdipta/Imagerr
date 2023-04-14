@@ -137,7 +137,7 @@ exports.searchImage = (req, res) => {
           { tags: { $regex: new RegExp(query, 'i') } }, // search for category that contains the query text
         ],
       }
-    ).select('-author -createdAt -updatedAt -category -tags')
+    ).select(' -createdAt -updatedAt -category -tags')
       .then((images) => {
         console.log(images);
         res.status(200).json({ message: 'Images retrieved successfully', data: images });

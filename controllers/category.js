@@ -19,6 +19,9 @@ exports.getACategory = (req,res) => {
     if(!req.category){
         return res.status(404).json({error: "No category found!",message: "404 Not Found"})
     }
+    if(req.category.assets.length > req.query.limit){
+        req.category.assets = req.category.assets.slice(0,req.query.limit)
+    }
     return res.status(200).json(req.category)
 }
 

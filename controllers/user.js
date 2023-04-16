@@ -1,5 +1,8 @@
 const User = require("../models/user")
 const _ = require('lodash')
+const formidable = require('formidable')
+const fs = require('fs')
+const { log } = require("console")
 
 exports.getUserById = (req,res,next,id) => {
     User.findById(id)
@@ -16,30 +19,38 @@ exports.getUserById = (req,res,next,id) => {
 }
 
 exports.updateUser = (req,res) => {
-    let user = req.profile
-    if(req.body.role){
-        if(req.body.role > 2){
-            return res.status(403).json({error: "You dont have permission!",message: "Cannot assign role!"})
-        }
-        if(req.body.role === 2){
-            user.accountType = "Creator"
-        }
-    }
-    user = _.extend(user,req.body)
-
-    user.save((err,updatedUser)=>{
+    const form = new formidable.IncomingForm()
+    form.keepExtensions = true
+    form.parse(req,(err,fields,file)=>{
         if(err){
-            return res.status(400).json({error: "Faild to update user info!",message: err})
+            return res.status(400).json({error: 'Problem with image.',message: err})
         }
 
-        updatedUser.collections = undefined
-        updatedUser.uploads = undefined
-        updatedUser.bank = undefined
-        updatedUser.encrypted_password = undefined
-        updatedUser.salt = undefined
-        updatedUser.role = undefined
+        let user = req.profile
+        if(req.body.role){
+            if(req.body.role > 2){
+                return res.status(403).json({error: "You dont have permission!",message: "Cannot assign role!"})
+            }
+            if(req.body.role === 2){
+                user.accountType = "Creator"
+            }
+        }
+        user = _.extend(user,fields)
 
-        return res.status(200).json(updatedUser)
+        if(file.profilePicture){
+            if(file.profilePicture.size > 4200000){
+                return res.status(400).json({error: 'Max. image limit reached (4MB).'})
+            }
+            user.profilePicture.data = fs.readFileSync(file.profilePicture.filepath)
+            user.profilePicture.contentType = file.profilePicture.mimetype
+        }
+
+        user.save((err,updatedUser)=>{
+            if(err){
+                return res.status(400).json({error: 'Faild to update info.',message: err})
+            }
+            return res.json(updatedUser)
+        })
     })
 }
 
@@ -136,4 +147,15 @@ exports.removeImageFromUserCollections = (req,res) => {
 
             return res.status(200).json({success: true,message: "Asset removed from collection"})
         })
+}
+
+exports.pushOrderIntoUser = (req,res,next) => {
+    User.findByIdAndUpdate(req.profile._id,{$push: {"purchases": req.orderToBePushed}},
+    {safe: true,upsert: true,new: true},
+    (err,updatedUser)=>{
+        if(err){
+            return res.status(500).json({error: "Faild to add order to your purchases!",message: err})
+        }
+        next()
+    })
 }

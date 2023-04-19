@@ -18,6 +18,17 @@ exports.getUserById = (req,res,next,id) => {
     })
 }
 
+exports.getCreatorImages = (req,res) => {
+    let data = {
+        _id: req.profile._id,
+        name: req.profile.name,
+        email: req.profile.email,
+        images: req.profile.uploads
+    }
+
+    return res.status(200).json(data)
+}
+
 exports.updateUser = (req,res) => {
     const form = new formidable.IncomingForm()
     form.keepExtensions = true

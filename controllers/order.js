@@ -2,7 +2,9 @@ const Order = require('../models/order')
 const Image = require('../models/image')
 
 exports.getOrderById = (req,res,next,id) => {
-    Order.findById(id).exec((err,order) => {
+    Order.findById(id)
+    .populate("images")
+    .exec((err,order) => {
         if(err){
             return res.status(500).json({error: "Faild to get order!",message: err})
         }else if(!order){

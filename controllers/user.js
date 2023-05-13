@@ -18,6 +18,20 @@ exports.getUserById = (req,res,next,id) => {
     })
 }
 
+exports.getAdminById = (req,res,next,id) => {
+    User.findById(id)
+    .populate('uploads')
+    .populate("collections")
+    .exec((err,user)=>{
+        if(err){
+            res.status(404).json({error: "Faild to get user.",body:""})
+        }
+
+        req.admin = user
+        next()
+    })
+}
+
 exports.getCreatorImages = (req,res) => {
     let data = {
         _id: req.profile._id,
@@ -39,11 +53,13 @@ exports.updateUser = (req,res) => {
 
         let user = req.profile
         if(req.body.role){
-            if(req.body.role > 2){
+            if(req.body.role > 2 && !req.admin){
                 return res.status(403).json({error: "You dont have permission!",message: "Cannot assign role!"})
             }
             if(req.body.role === 2){
                 user.accountType = "Creator"
+            }else if(req.body.role === 5){
+                user.accountType = "Admin"
             }
         }
         user = _.extend(user,fields)
@@ -74,6 +90,18 @@ exports.getUser = (req,res) => {
     req.profile.salt = undefined
     req.profile.bank = undefined
     return res.status(200).json(req.profile)
+}
+
+exports.getAllUsers = (req,res) => {
+    User.find()
+    .select("-profilePicture -encrypted_password -salt")
+    .exec((err,users)=>{
+        if(err){
+            return res.status(404).json({error: "No images found",message: err})
+        }
+
+        return res.status(200).json(users)
+    })
 }
 
 exports.getUserPhoto = (req,res) => {

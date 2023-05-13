@@ -106,22 +106,34 @@ exports.updateImage = (req,res) => {
         if(err){
             return res.status(400).json({error: "Faild to update image!",message: err})
         }
-
+        updatedImage.category.assets ? updatedImage.category.assets = undefined :''
         return res.status(200).json(updatedImage)
     })
 }
 
 exports.getAllImages = (req,res) => {
-    Image.find()
-    .limit(req.query.limit ? req.query.limit : 50)
-    .populate("author","_id name email")
-    .exec((err,images)=>{
-        if(err){
-            return res.status(404).json({error: "No images found",message: err})
-        }
-
-        return res.status(200).json(images)
-    })
+    if(req.admin){
+        Image.find()
+        .populate("author","_id name email")
+        .exec((err,images)=>{
+            if(err){
+                return res.status(404).json({error: "No images found",message: err})
+            }
+    
+            return res.status(200).json(images)
+        })
+    }else{
+        Image.find()
+        .limit(req.query.limit ? req.query.limit : 50)
+        .populate("author","_id name email")
+        .exec((err,images)=>{
+            if(err){
+                return res.status(404).json({error: "No images found",message: err})
+            }
+    
+            return res.status(200).json(images)
+        })
+    }
 }
 
 exports.searchImage = (req, res) => {

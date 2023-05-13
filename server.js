@@ -11,6 +11,7 @@ const authRoutes = require('./routes/auth')
 const imageRoutes = require('./routes/image')
 const categoryRoutes = require('./routes/category')
 const orderRoutes = require('./routes/order')
+const adminRoutes = require('./routes/admin')
 
 // Express server
 const app = express();
@@ -47,6 +48,7 @@ app.use("/api",userRoutes)
 app.use("/api",imageRoutes)
 app.use("/api",categoryRoutes)
 app.use("/api",orderRoutes)
+app.use("/api",adminRoutes)
 
 // Starting server
 app.listen(PORT,()=>{

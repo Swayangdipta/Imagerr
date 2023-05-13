@@ -154,7 +154,7 @@ exports.isAuthenticated = (req,res,next) => {
 }
 
 exports.isAdmin = (req,res,next) => {
-    if(req.profile.role !== 5){
+    if(req.admin.role !== 5 ){
         res.status(403).json({error: "You are not an Admin.",body:""})
     }
 

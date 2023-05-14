@@ -198,3 +198,27 @@ exports.pushOrderIntoUser = (req,res,next) => {
         next()
     })
 }
+
+exports.searchUser = (req, res) => {
+    if (req.body.query === '') {
+      return res.status(400).json({ error: 'All fields are required!', message: '' });
+    }
+  
+    const query = req.body.query;
+    User.find(
+      {
+        $or: [
+          { _id: { $regex: new RegExp(query, 'i') } }, // search for id that contains the query text
+          { name: { $regex: new RegExp(query, 'i') } }, // search for name that contains the query text
+          { email: { $regex: new RegExp(query, 'i') } }, // search for email that contains the query text
+        ],
+      }
+    ).select(' -createdAt -updatedAt -profilePicture -encrypted_password -salt -bank')
+      .then((images) => {
+        res.status(200).json({ message: 'Users retrieved successfully', data: images });
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({ error: 'Internal server error', message: '' });
+      });
+  };

@@ -12,7 +12,7 @@ router.param("productId",getImageById)
 router.get("/admin/users/:adminId",isSignedIn,isAdmin,getAllUsers)
 router.get("/admin/user/:userId",getUser)
 router.post("/admin/user/:adminId",isSignedIn,isAdmin,signUp)
-router.post("/admin/user/:adminId",isSignedIn,isAdmin,searchUser)
+router.post("/admin/search/user/:adminId",isSignedIn,isAdmin,searchUser)
 router.put("/admin/user/:userId/:adminId",isSignedIn,isAdmin,updateUser)
 router.delete("/admin/user/:userId/:adminId",isSignedIn,isAdmin,deleteUserAccount)
 

@@ -145,7 +145,7 @@ exports.searchImage = (req, res) => {
     Image.find(
       {
         $or: [
-          { _id: { $regex: new RegExp(query, 'i') } }, // search for id that contains the query text
+          { _id: { $eq: new RegExp(query, 'i') } }, // search for id that contains the query text
           { title: { $regex: new RegExp(query, 'i') } }, // search for title that contains the query text
           { tags: { $regex: new RegExp(query, 'i') } }, // search for category that contains the query text
         ],

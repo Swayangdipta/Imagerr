@@ -205,12 +205,12 @@ exports.searchUser = (req, res) => {
     }
   
     const query = req.body.query;
+    query.toString()
     User.find(
       {
         $or: [
-          { _id: { $regex: new RegExp(query, 'i') } }, // search for id that contains the query text
+          { _id: {$eq: query} }, // search for id that contains the query text
           { name: { $regex: new RegExp(query, 'i') } }, // search for name that contains the query text
-          { email: { $regex: new RegExp(query, 'i') } }, // search for email that contains the query text
         ],
       }
     ).select(' -createdAt -updatedAt -profilePicture -encrypted_password -salt -bank')
